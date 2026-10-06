@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Bar } from 'react-chartjs-2'
 import {
   BarElement,
@@ -7,27 +7,11 @@ import {
   LinearScale,
   Tooltip,
 } from 'chart.js'
-import { initialCriteria } from './data/criteria.js'
-import { exampleMunicipalities } from './data/topsisExample.js'
-import { calcularTopsis } from './services/topsis.js'
 import './App.css'
 import { executarTopsisApi } from './services/topsisApi.js'
+import { carregarDados } from './services/dadosApi.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
-
-function calculateRanking(criteria) {
-  const resultado = calcularTopsis(
-    exampleMunicipalities.map((municipio) => municipio.values),
-    criteria.map((criterio) => criterio.weight / 100),
-    criteria.map((criterio) => criterio.type),
-  )
-  return resultado.map((item, position) => ({
-    ...exampleMunicipalities[item.indice],
-    state: '—',
-    score: item.ci,
-    status: position === 0 ? 'Menos vulnerável' : position === resultado.length - 1 ? 'Mais vulnerável' : 'Intermediário',
-  }))
-}
 
 function statusPorPosicao(position, total) {
   if (position === 0) return 'Menos vulnerável'
@@ -35,13 +19,12 @@ function statusPorPosicao(position, total) {
   return 'Intermediário'
 }
 
-function rankingDaApi(resposta) {
+function rankingDaApi(resposta, municipios) {
   const lista = resposta.ranking
   return lista.map((item, position) => {
-    const municipio = exampleMunicipalities.find((m) => m.name === item.municipio)
+    const municipio = municipios.find((m) => m.name === item.municipio)
     return {
       ...municipio,
-      state: '—',
       score: item.ci,
       status: statusPorPosicao(position, lista.length),
     }
@@ -91,11 +74,30 @@ const chartOptions = {
 function App() {
   const [activePage, setActivePage] = useState('Visão geral')
   const [search, setSearch] = useState('')
-  const [criteria, setCriteria] = useState(initialCriteria)
-  const [ranking, setRanking] = useState(() => calculateRanking(initialCriteria))
+  const [municipios, setMunicipios] = useState([])
+  const [criteria, setCriteria] = useState([])
+  const [ranking, setRanking] = useState([])
+  const [loadingData, setLoadingData] = useState(true)
   const [analysisIsCurrent, setAnalysisIsCurrent] = useState(true)
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState(null)
+
+  useEffect(() => {
+    async function iniciar() {
+      try {
+        const dados = await carregarDados()
+        setMunicipios(dados.municipios)
+        setCriteria(dados.criteria)
+        const resposta = await executarTopsisApi(dados.municipios, dados.criteria)
+        setRanking(rankingDaApi(resposta, dados.municipios))
+      } catch (error) {
+        setApiError(error.message)
+      } finally {
+        setLoadingData(false)
+      }
+    }
+    iniciar()
+  }, [])
 
   const totalWeight = criteria.reduce((total, criterion) => total + criterion.weight, 0)
 
@@ -110,21 +112,21 @@ function App() {
   }
 
   async function handleConfigurationSubmit(event) {
-  event.preventDefault()
-  if (totalWeight !== 100) return
+    event.preventDefault()
+    if (totalWeight !== 100) return
 
-  setLoading(true)
-  setApiError(null)
-  try {
-    const resposta = await executarTopsisApi(exampleMunicipalities, criteria)
-    setRanking(rankingDaApi(resposta))
-    setAnalysisIsCurrent(true)
-  } catch (error) {
-    setApiError(error.message)
-  } finally {
-    setLoading(false)
+    setLoading(true)
+    setApiError(null)
+    try {
+      const resposta = await executarTopsisApi(municipios, criteria)
+      setRanking(rankingDaApi(resposta, municipios))
+      setAnalysisIsCurrent(true)
+    } catch (error) {
+      setApiError(error.message)
+    } finally {
+      setLoading(false)
+    }
   }
-}
 
   const chartData = useMemo(() => ({
     labels: ranking.map((item) => item.name),
@@ -138,9 +140,6 @@ function App() {
     }],
   }), [ranking])
 
-  const averageCi = ranking.reduce((total, item) => total + item.score, 0) / ranking.length
-  const mostVulnerable = ranking[ranking.length - 1]
-
   const filteredRanking = useMemo(() => {
     const query = search.trim().toLocaleLowerCase('pt-BR')
     if (!query) return ranking
@@ -148,6 +147,15 @@ function App() {
       `${item.name} ${item.state}`.toLocaleLowerCase('pt-BR').includes(query),
     )
   }, [search, ranking])
+
+  if (loadingData) return <p style={{ padding: 24 }}>Carregando dados...</p>
+
+  if (ranking.length === 0) {
+    return <p style={{ padding: 24 }}>{apiError || 'Nenhum dado encontrado no banco.'}</p>
+  }
+
+  const averageCi = ranking.reduce((total, item) => total + item.score, 0) / ranking.length
+  const mostVulnerable = ranking[ranking.length - 1]
 
   return (
     <div className="app-shell">
