@@ -215,3 +215,8 @@ tbody tr:last-child td { border-bottom: 0; }
   .table-footer { flex-wrap: wrap; }
   .page-footer { gap: 8px; font-size: 7px; }
 }
+
+.config-error {
+  color: #c66d5d;
+  font-weight: 600;
+}

@@ -11,6 +11,7 @@ import { initialCriteria } from './data/criteria.js'
 import { exampleMunicipalities } from './data/topsisExample.js'
 import { calcularTopsis } from './services/topsis.js'
 import './App.css'
+import { executarTopsisApi } from './services/topsisApi.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
@@ -26,6 +27,25 @@ function calculateRanking(criteria) {
     score: item.ci,
     status: position === 0 ? 'Menos vulnerável' : position === resultado.length - 1 ? 'Mais vulnerável' : 'Intermediário',
   }))
+}
+
+function statusPorPosicao(position, total) {
+  if (position === 0) return 'Menos vulnerável'
+  if (position === total - 1) return 'Mais vulnerável'
+  return 'Intermediário'
+}
+
+function rankingDaApi(resposta) {
+  const lista = resposta.ranking
+  return lista.map((item, position) => {
+    const municipio = exampleMunicipalities.find((m) => m.name === item.municipio)
+    return {
+      ...municipio,
+      state: '—',
+      score: item.ci,
+      status: statusPorPosicao(position, lista.length),
+    }
+  })
 }
 
 const navigation = [
@@ -74,6 +94,8 @@ function App() {
   const [criteria, setCriteria] = useState(initialCriteria)
   const [ranking, setRanking] = useState(() => calculateRanking(initialCriteria))
   const [analysisIsCurrent, setAnalysisIsCurrent] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [apiError, setApiError] = useState(null)
 
   const totalWeight = criteria.reduce((total, criterion) => total + criterion.weight, 0)
 
@@ -84,15 +106,25 @@ function App() {
       ),
     )
     setAnalysisIsCurrent(false)
+    setApiError(null)
   }
 
-  function handleConfigurationSubmit(event) {
-    event.preventDefault()
-    if (totalWeight === 100) {
-      setRanking(calculateRanking(criteria))
-      setAnalysisIsCurrent(true)
-    }
+  async function handleConfigurationSubmit(event) {
+  event.preventDefault()
+  if (totalWeight !== 100) return
+
+  setLoading(true)
+  setApiError(null)
+  try {
+    const resposta = await executarTopsisApi(exampleMunicipalities, criteria)
+    setRanking(rankingDaApi(resposta))
+    setAnalysisIsCurrent(true)
+  } catch (error) {
+    setApiError(error.message)
+  } finally {
+    setLoading(false)
   }
+}
 
   const chartData = useMemo(() => ({
     labels: ranking.map((item) => item.name),
@@ -260,7 +292,9 @@ function App() {
 
               <div className="config-footer">
                 <div className="config-feedback" aria-live="polite">
-                  {analysisIsCurrent ? (
+                  {apiError ? (
+                    <span className="config-error">{apiError}</span>
+                  ) : analysisIsCurrent ? (
                     <span className="config-success">TOPSIS executado com sucesso. A configuração atual soma 100% (1,00).</span>
                   ) : totalWeight < 100 ? (
                     <span>Faltam {100 - totalWeight}% para completar a soma. O ranking exibido é da última execução.</span>
@@ -270,8 +304,8 @@ function App() {
                     <span>Pesos alterados. Execute novamente para atualizar o ranking.</span>
                   )}
                 </div>
-                <button className="primary-button config-submit" type="submit" disabled={totalWeight !== 100}>
-                  Executar TOPSIS <span aria-hidden="true">→</span>
+                <button className="primary-button config-submit" type="submit" disabled={totalWeight !== 100 || loading}>
+                  {loading ? 'Calculando...' : <>Executar TOPSIS <span aria-hidden="true">→</span></>}
                 </button>
               </div>
             </form>
