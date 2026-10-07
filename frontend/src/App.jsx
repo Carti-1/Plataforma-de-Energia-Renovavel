@@ -11,6 +11,7 @@ import './App.css'
 import MapaVulnerabilidade from './components/MapaVulnerabilidade';
 import { executarTopsisApi } from './services/topsisApi.js'
 import { carregarDados } from './services/dadosApi.js'
+import { exportarParaCSV } from './utils/exportRelatorio.js'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
@@ -335,13 +336,42 @@ function App() {
           </section>
 
           <section className="panel ranking-panel" id="ranking">
-            <div className="panel-heading ranking-heading">
+            <div className="panel-heading ranking-heading" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
               <div><h2>Ranking de municípios</h2><p>Municípios ordenados pelo índice Ci</p></div>
-              <label className="search-box"><span aria-hidden="true">⌕</span><input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Buscar município" aria-label="Buscar município" /></label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <label className="search-box">
+                  <span aria-hidden="true">⌕</span>
+                  <input 
+                    value={search} 
+                    onChange={(event) => setSearch(event.target.value)} 
+                    placeholder="Buscar município" 
+                    aria-label="Buscar município" 
+                  />
+                </label>
+
+                <button 
+                  className="primary-button" 
+                  type="button" 
+                  onClick={() => exportarParaCSV(filteredRanking)}
+                  style={{ padding: '8px 16px', fontSize: '0.875rem', whiteSpace: 'nowrap' }}
+                >
+                  <span aria-hidden="true">⬇</span> Exportar CSV
+                </button>
+              </div>
             </div>
+
             <div className="table-wrap">
               <table>
-                <thead><tr><th>POSIÇÃO</th><th>MUNICÍPIO</th><th>UF</th><th>ÍNDICE Ci</th><th>LEITURA DEMONSTRATIVA</th><th /></tr></thead>
+                <thead>
+                  <tr>
+                    <th>POSIÇÃO</th>
+                    <th>MUNICÍPIO</th>
+                    <th>UF</th>
+                    <th>ÍNDICE Ci</th>
+                    <th>LEITURA DEMONSTRATIVA</th>
+                    <th />
+                  </tr>
+                </thead>
                 <tbody>
                   {filteredRanking.map((item, index) => (
                     <tr key={item.name}>
@@ -349,15 +379,31 @@ function App() {
                       <td><strong className="municipality-name">{item.name}</strong></td>
                       <td><span className="state-pill">{item.state}</span></td>
                       <td><strong>{item.score.toFixed(2).replace('.', ',')}</strong></td>
-                      <td><span className={`status-pill ${item.status === 'Mais vulnerável' ? 'status-highest' : item.status === 'Intermediário' ? 'status-high' : 'status-medium'}`}><i />{item.status}</span></td>
-                      <td><button className="row-action" type="button" aria-label={`Ver detalhes de ${item.name}`}>→</button></td>
+                      <td>
+                        <span className={`status-pill ${item.status === 'Mais vulnerável' ? 'status-highest' : item.status === 'Intermediário' ? 'status-high' : 'status-medium'}`}>
+                          <i />{item.status}
+                        </span>
+                      </td>
+                      <td>
+                        <button className="row-action" type="button" aria-label={`Ver detalhes de ${item.name}`}>→</button>
+                      </td>
                     </tr>
                   ))}
-                  {filteredRanking.length === 0 && <tr><td className="empty-state" colSpan="6">Nenhum município encontrado para “{search}”.</td></tr>}
+                  {filteredRanking.length === 0 && (
+                    <tr>
+                      <td className="empty-state" colSpan="6">Nenhum município encontrado para “{search}”.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
-            <div className="table-footer"><span>Exibindo {filteredRanking.length} de {ranking.length} municípios do exemplo 7.3</span><button className="pagination-button" type="button" disabled>‹</button><button className="pagination-button current-page" type="button">1</button><button className="pagination-button" type="button" disabled>›</button></div>
+  
+            <div className="table-footer">
+              <span>Exibindo {filteredRanking.length} de {ranking.length} municípios do exemplo 7.3</span>
+              <button className="pagination-button" type="button" disabled>‹</button>
+              <button className="pagination-button current-page" type="button">1</button>
+              <button className="pagination-button" type="button" disabled>›</button>
+            </div>
           </section>
 
           <footer className="page-footer"><span>Plataforma de Energia Renovável</span><span>Projeto acadêmico · Método TOPSIS</span></footer>
