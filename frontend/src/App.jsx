@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from 'chart.js'
 import './App.css'
+import MapaVulnerabilidade from './components/MapaVulnerabilidade';
 import { executarTopsisApi } from './services/topsisApi.js'
 import { carregarDados } from './services/dadosApi.js'
 
@@ -321,12 +322,15 @@ function App() {
           </section>
 
           <section className="panel map-panel" id="mapa">
-            <div className="panel-heading"><div><h2>Mapa de vulnerabilidade energética</h2><p>Visualização georreferenciada prevista no roteiro do projeto</p></div><span className="map-tech">Previsto: Leaflet</span></div>
-            <div className="map-empty-state">
-              <span className="map-pin" aria-hidden="true">⌖</span>
-              <strong>O mapa será conectado aos dados dos municípios</strong>
-              <p>Para posicionar os municípios, ainda precisamos das coordenadas geográficas e da camada de indicadores.</p>
-              <span className="map-status">PRÓXIMA ETAPA · DADOS GEOGRÁFICOS PENDENTES</span>
+            <div className="panel-heading">
+              <div>
+                <h2>Mapa de vulnerabilidade energética</h2>
+                <p>Visualização georreferenciada com dados do PostGIS e resultados TOPSIS</p>
+              </div>
+              <span className="map-tech">Leaflet + PostGIS</span>
+            </div>
+            <div style={{ marginTop: '16px' }}>
+              <MapaVulnerabilidade resultadosTopsis={ranking} />
             </div>
           </section>
 
