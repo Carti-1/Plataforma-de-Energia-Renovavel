@@ -1,12 +1,16 @@
 import express from 'express'
 import topsisRoutes from './routes/topsis.routes.js'
 import dadosRoutes from './routes/dados.routes.js'
+import municipiosRoutes from './routes/municipios.routes.js'
+import criteriosRoutes from './routes/criterios.routes.js'
 
 const app = express()
 
 app.use(express.json())
 app.use('/api/topsis', topsisRoutes)
 app.use('/api/dados', dadosRoutes)
+app.use('/api/municipios', municipiosRoutes)
+app.use('/api/criterios', criteriosRoutes)
 
 // Converte JSON inválido em uma resposta compreensível para o frontend.
 app.use((erro, req, res, next) => {
