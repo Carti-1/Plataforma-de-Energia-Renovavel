@@ -12,6 +12,33 @@ export async function listarMunicipios() {
   return rows
 }
 
+export async function listarMunicipiosGeoJSON() {
+  const { rows } = await pool.query(
+    `SELECT jsonb_build_object(
+       'type', 'FeatureCollection',
+       'features', COALESCE(
+         jsonb_agg(
+           jsonb_build_object(
+             'type', 'Feature',
+             'geometry', ST_AsGeoJSON(coordenadas)::jsonb,
+             'properties', jsonb_build_object(
+               'id', id,
+               'nome', nome,
+               'uf', uf,
+               'populacao', populacao,
+               'idh', idh
+             )
+           )
+         ) FILTER (WHERE coordenadas IS NOT NULL),
+         '[]'::jsonb
+       )
+     ) AS geojson
+       FROM municipios`,
+  )
+
+  return rows[0].geojson
+}
+
 export async function buscarMunicipio(id) {
   const { rows } = await pool.query(
     `SELECT id, nome, uf, populacao, idh,

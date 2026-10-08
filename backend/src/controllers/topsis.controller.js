@@ -119,6 +119,12 @@ export async function executarTopsis(req, res) {
       client.release()
     }
   } catch (erro) {
+    console.error(erro)
+    if (erro.code) {
+      return res.status(503).json({
+        erro: 'O cálculo foi feito, mas não foi possível salvar a simulação. Confira a conexão e a migração do banco.',
+      })
+    }
     return res.status(400).json({ erro: erro.message })
   }
 }

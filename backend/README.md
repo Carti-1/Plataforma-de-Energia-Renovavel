@@ -1,41 +1,39 @@
-# API do backend
+# Backend da plataforma
 
-## Iniciar a API
+API feita com Node.js e Express. O cálculo TOPSIS está em `src/services/topsis.service.js`; as rotas e repositórios acessam PostgreSQL. A leitura do banco exige que PostgreSQL, PostGIS, migração, credenciais e seed estejam prontos.
 
-No terminal, entre na pasta `backend` e execute:
+## Configurar a conexão
+
+1. Copie `.env.example` para `.env` nesta pasta.
+2. Para usar o banco do Compose, mantenha as configurações de exemplo. Para uma instalação nativa, ajuste `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD`.
+3. Não compartilhe nem envie o arquivo `.env` ao Git.
+4. Com Docker Desktop ativo, execute `docker compose up -d` na raiz. Na primeira criação do volume, o Compose executa a migração. Para instalação nativa, selecione a base indicada por `DB_NAME` no pgAdmin e execute `migrations/001_initial_schema.sql`.
+5. Execute `npm run db:test`. A saída informa a versão do PostGIS; se falhar, confira o erro do terminal antes de abrir o frontend.
+6. Execute `npm run db:seed` para inserir os três municípios, cinco critérios e valores do exemplo numérico 7.3.
+
+Se a extensão ainda não estiver instalada, a migração falhará no comando `CREATE EXTENSION postgis`. Instale a extensão compatível com a versão do PostgreSQL e repita a migração na base correta.
+
+## Iniciar e verificar
 
 ```bash
+npm install
 npm run dev
 ```
 
-A API ficará disponível em `http://localhost:3000`. O modo `dev` reinicia o servidor quando um arquivo é alterado.
+A API inicia em `http://localhost:3000`. Para os testes unitários do algoritmo, execute `npm test`.
 
-## Executar o TOPSIS
+## Rotas principais
 
-- Método: `POST`
-- Endereço: `http://localhost:3000/api/topsis/executar`
-- Tipo do corpo: `application/json`
+| Método | Rota | Uso |
+| --- | --- | --- |
+| GET | `/api/dados/topsis` | Lê municípios, matriz de decisão e critérios do banco. |
+| POST | `/api/topsis/executar` | Calcula TOPSIS e grava a simulação e o ranking. |
+| GET | `/api/municipios/geojson` | Devolve municípios com coordenadas como GeoJSON. |
+| GET, POST, PUT, DELETE | `/api/municipios` | Lista, cadastra, atualiza ou remove municípios. |
+| GET, POST, PUT, DELETE | `/api/criterios` | Lista, cadastra, atualiza ou remove critérios. |
 
-Envie os municípios (com os valores na mesma ordem dos critérios), os pesos e os tipos:
+O endpoint GeoJSON ignora municípios sem coordenadas. O seed do exemplo não inventa coordenadas para os municípios fictícios; por isso o mapa informa quando não há pontos disponíveis.
 
-```json
-{
-  "municipios": [
-    { "nome": "Município A", "valores": [15, 0.8, 980, 0.75, 5.2] },
-    { "nome": "Município B", "valores": [5, 2.1, 1850, 0.62, 5.8] },
-    { "nome": "Município C", "valores": [22, 0.3, 650, 0.89, 4.9] }
-  ],
-  "pesos": [0.2, 0.2, 0.15, 0.25, 0.2],
-  "tipos": ["custo", "beneficio", "beneficio", "custo", "beneficio"]
-}
-```
+## Mensagens de erro do banco
 
-Os tipos e valores seguem o exemplo numérico 7.3 do roteiro: C1 e C4 são custos; C2, C3 e C5 são benefícios. Os pesos devem somar `1`.
-
-O sucesso retorna `200` com `ranking` (posição, município, Ci e distâncias) e `metadata`. Para esse exemplo, o ranking esperado é **Município B > Município A > Município C**: um Ci maior representa menor vulnerabilidade. Dados ausentes ou inválidos retornam `400` com uma mensagem no campo `erro`.
-
-## Integração com o frontend
-
-O Vite encaminha caminhos que começam com `/api` para o backend na porta `3000`. Portanto, no frontend, a chamada deve usar o caminho relativo `/api/topsis/executar`. Durante o desenvolvimento, mantenha o frontend e o backend em execução, cada um em seu terminal.
-
-Esta primeira rota calcula e devolve os resultados. Ela ainda não grava simulações no banco; essa etapa depende da configuração do PostgreSQL.
+Se uma consulta falhar, a API retorna uma mensagem de configuração conhecida e o terminal do backend registra o erro técnico. Verifique se o serviço PostgreSQL está ativo, as variáveis do `.env`, a existência das tabelas e a conclusão da migração/seed. O frontend oferece o botão “Tentar novamente” depois que a configuração for corrigida.

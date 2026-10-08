@@ -1,6 +1,7 @@
 import { Router } from 'express'
 import {
   listarMunicipios,
+  listarMunicipiosGeoJSON,
   buscarMunicipio,
   criarMunicipio,
   atualizarMunicipio,
@@ -8,6 +9,16 @@ import {
 } from '../repositories/municipios.repository.js'
 
 const router = Router()
+
+router.get('/geojson', async (_req, res) => {
+  try {
+    const geojson = await listarMunicipiosGeoJSON()
+    return res.status(200).json(geojson)
+  } catch (erro) {
+    console.error(erro)
+    return res.status(503).json({ erro: 'Não foi possível carregar as coordenadas. Confira a conexão com o PostgreSQL e o PostGIS.' })
+  }
+})
 
 router.get('/', async (_req, res) => {
   try {
