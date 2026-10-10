@@ -20,7 +20,7 @@ export default function MapaVulnerabilidade({ resultadosTopsis }) {
 
   useEffect(() => {
     // Procura os dados GeoJSON dos municípios no backend
-    fetch('http://localhost:3000/api/municipios/geojson')
+    fetch('/api/municipios/geojson')
       .then((res) => res.json())
       .then((data) => {
         if (data && data.features) {
@@ -45,7 +45,8 @@ export default function MapaVulnerabilidade({ resultadosTopsis }) {
           const [lon, lat] = feature.geometry.coordinates;
 
           // Cruza com o resultado do TOPSIS se disponível
-          const resultado = resultadosTopsis?.find((r) => r.id === id || r.nome === nome);
+          const indiceRanking = resultadosTopsis?.findIndex((r) => r.id === id) ?? -1;
+          const resultado = indiceRanking >= 0 ? resultadosTopsis[indiceRanking] : null;
 
           return (
             <Marker key={id} position={[lat, lon]}>
@@ -56,8 +57,8 @@ export default function MapaVulnerabilidade({ resultadosTopsis }) {
                   <p style={{ margin: '2px 0' }}><strong>IDH:</strong> {idh}</p>
                   {resultado ? (
                     <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #ccc' }}>
-                      <p style={{ margin: '2px 0', color: '#2b6cb0' }}><strong>Ranking TOPSIS:</strong> #{resultado.posicao}</p>
-                      <p style={{ margin: '2px 0', color: '#2b6cb0' }}><strong>Coeficiente ($C_i$):</strong> {resultado.ci?.toFixed(4)}</p>
+                      <p style={{ margin: '2px 0', color: '#2b6cb0' }}><strong>Ranking TOPSIS:</strong> #{indiceRanking + 1}</p>
+                      <p style={{ margin: '2px 0', color: '#2b6cb0' }}><strong>Coeficiente (Ci):</strong> {resultado.score?.toFixed(4)}</p>
                     </div>
                   ) : (
                     <p style={{ margin: '5px 0 0 0', fontSize: '0.85em', color: '#666' }}>Sem cálculo TOPSIS ativo</p>

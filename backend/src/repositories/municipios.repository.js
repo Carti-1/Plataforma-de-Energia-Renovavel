@@ -69,8 +69,8 @@ export async function criarMunicipio({
        $3,
        $4,
        CASE
-         WHEN $5 IS NOT NULL AND $6 IS NOT NULL
-         THEN ST_SetSRID(ST_MakePoint($6, $5), 4326)
+         WHEN $5::float8 IS NOT NULL AND $6::float8 IS NOT NULL
+         THEN ST_SetSRID(ST_MakePoint($6::float8, $5::float8), 4326)
          ELSE NULL
        END
      )
@@ -94,8 +94,8 @@ export async function atualizarMunicipio(
             populacao = $3,
             idh = $4,
             coordenadas = CASE
-              WHEN $5 IS NOT NULL AND $6 IS NOT NULL
-              THEN ST_SetSRID(ST_MakePoint($6, $5), 4326)
+              WHEN $5::float8 IS NOT NULL AND $6::float8 IS NOT NULL
+              THEN ST_SetSRID(ST_MakePoint($6::float8, $5::float8), 4326)
               ELSE coordenadas
             END
       WHERE id = $7

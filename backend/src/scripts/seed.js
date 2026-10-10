@@ -2,6 +2,9 @@ import { pool } from '../config/db.js'
 
 const ANO = 2025 // ano de referência fictício do exemplo
 
+// Use `npm run db:seed -- --reset` para apagar os dados e recarregar o exemplo.
+const RESETAR = process.argv.includes('--reset')
+
 const criterios = [
   { nome: 'Domicílios sem acesso à eletricidade', unidade: '%', fonte: 'IBGE', tipo: 'custo', peso: 0.2 },
   { nome: 'Capacidade instalada solar', unidade: 'kW/hab', fonte: 'ANEEL', tipo: 'beneficio', peso: 0.2 },
@@ -10,17 +13,28 @@ const criterios = [
   { nome: 'Índice de irradiação solar', unidade: 'kWh/m²/dia', fonte: 'INPE', tipo: 'beneficio', peso: 0.2 },
 ]
 
+// Municípios do exemplo 7.3 do roteiro. Os nomes são fictícios; as coordenadas
+// são apenas posições de demonstração na Bahia para o mapa exibir os pontos.
 const municipios = [
-  { nome: 'Município A', valores: [15, 0.8, 980, 0.75, 5.2] },
-  { nome: 'Município B', valores: [5, 2.1, 1850, 0.62, 5.8] },
-  { nome: 'Município C', valores: [22, 0.3, 650, 0.89, 4.9] },
+  { nome: 'Município A', uf: 'BA', latitude: -12.97, longitude: -38.5, valores: [15, 0.8, 980, 0.75, 5.2] },
+  { nome: 'Município B', uf: 'BA', latitude: -12.25, longitude: -38.96, valores: [5, 2.1, 1850, 0.62, 5.8] },
+  { nome: 'Município C', uf: 'BA', latitude: -14.86, longitude: -40.84, valores: [22, 0.3, 650, 0.89, 4.9] },
 ]
 
 const client = await pool.connect()
 try {
+  if (RESETAR) {
+    // Não apaga a tabela usuarios.
+    await client.query(
+      `TRUNCATE resultados_ranking, simulacoes, matriz_decisao, criterios, municipios
+       RESTART IDENTITY CASCADE`,
+    )
+    console.log('Dados anteriores removidos (--reset).')
+  }
+
   const { rows } = await client.query('SELECT COUNT(*)::int AS total FROM municipios')
   if (rows[0].total > 0) {
-    console.log('O banco já tem municípios. Seed ignorado para não duplicar.')
+    console.log('O banco já tem municípios. Seed ignorado para não duplicar. Use --reset para recarregar.')
   } else {
     await client.query('BEGIN')
 
@@ -36,8 +50,10 @@ try {
 
     for (const m of municipios) {
       const r = await client.query(
-        `INSERT INTO municipios (nome, uf) VALUES ($1, 'ND') RETURNING id`,
-        [m.nome],
+        `INSERT INTO municipios (nome, uf, coordenadas)
+         VALUES ($1, $2, ST_SetSRID(ST_MakePoint($3::float8, $4::float8), 4326))
+         RETURNING id`,
+        [m.nome, m.uf, m.longitude, m.latitude], // PostGIS usa a ordem (longitude, latitude)
       )
       for (let i = 0; i < m.valores.length; i++) {
         await client.query(
@@ -49,11 +65,12 @@ try {
     }
 
     await client.query('COMMIT')
-    console.log('Seed concluído: 3 municípios, 5 critérios e 15 valores.')
+    console.log('Seed concluído: 3 municípios (com coordenadas), 5 critérios e 15 valores.')
   }
 } catch (erro) {
   await client.query('ROLLBACK')
   console.error('Falha no seed:', erro.message)
+  process.exitCode = 1
 } finally {
   client.release()
   await pool.end()
