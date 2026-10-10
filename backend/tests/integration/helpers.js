@@ -39,9 +39,12 @@ export async function limparDadosDeTeste() {
     [emails],
   )
   await pool.query(
-    'DELETE FROM matriz_decisao WHERE municipio_id IN (SELECT id FROM municipios WHERE nome LIKE $1)',
+    `DELETE FROM matriz_decisao
+      WHERE municipio_id IN (SELECT id FROM municipios WHERE nome LIKE $1)
+         OR criterio_id IN (SELECT id FROM criterios WHERE nome LIKE $1)`,
     [nomes],
   )
+  await pool.query('DELETE FROM criterios WHERE nome LIKE $1', [nomes])
   await pool.query('DELETE FROM municipios WHERE nome LIKE $1', [nomes])
   await pool.query('DELETE FROM usuarios WHERE email LIKE $1', [emails])
 }

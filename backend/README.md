@@ -20,7 +20,7 @@ npm install
 npm run dev
 ```
 
-A API inicia em `http://localhost:3000`. Execute `npm test` para os testes unitários (não precisam de banco) e `npm run test:integration` para os testes de integração da API (precisam do PostgreSQL migrado; usam dados temporários que são removidos ao final).
+A API inicia em `http://localhost:3000`. Execute `npm test` para os testes unitários (não precisam de banco) e `npm run test:integration` para os testes de integração da API (precisam do PostgreSQL migrado; usam dados temporários que são removidos ao final). `npm run test:coverage` roda tudo com relatório de cobertura e falha se ficar abaixo de 80% (RNF05). O GitHub Actions (`.github/workflows/ci.yml`) executa isso a cada push, além do lint e do build do frontend.
 
 ## Autenticação e perfis
 

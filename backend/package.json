@@ -10,7 +10,8 @@
     "db:seed": "node src/scripts/seed.js",
     "test": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --testPathIgnorePatterns=integration",
     "test:integration": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --testPathPatterns=integration",
-    "usuario:criar": "node src/scripts/criar-usuario.js"
+    "usuario:criar": "node src/scripts/criar-usuario.js",
+    "test:coverage": "node --experimental-vm-modules ./node_modules/jest/bin/jest.js --runInBand --coverage"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -29,6 +30,19 @@
   "jest": {
     "setupFiles": [
       "<rootDir>/tests/setup.js"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.js",
+      "!src/scripts/**",
+      "!src/server.js"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "statements": 80,
+        "lines": 80,
+        "functions": 80,
+        "branches": 70
+      }
+    }
   }
 }
