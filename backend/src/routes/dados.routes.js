@@ -1,7 +1,10 @@
 import { Router } from 'express'
+import { autenticar } from '../middlewares/auth.middleware.js'
 import { buscarMatrizDecisao, listarCriterios } from '../repositories/dados.repository.js'
 
 const router = Router()
+
+router.use(autenticar)
 
 router.get('/topsis', async (_req, res) => {
   try {

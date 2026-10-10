@@ -1,7 +1,9 @@
+import { authFetch } from './auth.js'
+
 export async function carregarDados() {
   let resposta
   try {
-    resposta = await fetch('/api/dados/topsis')
+    resposta = await authFetch('/api/dados/topsis')
   } catch {
     throw new Error('Não foi possível conectar à API. O backend está rodando?')
   }

@@ -1,4 +1,5 @@
 import { Router } from 'express'
+import { autenticar, autorizar } from '../middlewares/auth.middleware.js'
 import {
   listarMunicipios,
   listarMunicipiosGeoJSON,
@@ -7,8 +8,11 @@ import {
   atualizarMunicipio,
   excluirMunicipio,
 } from '../repositories/municipios.repository.js'
+import { responderErro } from '../utils/erros.js'
 
 const router = Router()
+
+router.use(autenticar)
 
 router.get('/geojson', async (_req, res) => {
   try {
@@ -25,8 +29,7 @@ router.get('/', async (_req, res) => {
     const municipios = await listarMunicipios()
     res.status(200).json(municipios)
   } catch (erro) {
-    console.error(erro)
-    res.status(500).json({ erro: 'Não foi possível listar os municípios.' })
+    responderErro(res, erro, 'Não foi possível listar os municípios.')
   }
 })
 
@@ -40,24 +43,23 @@ router.get('/:id', async (req, res) => {
 
     return res.status(200).json(municipio)
   } catch (erro) {
-    console.error(erro)
-    return res.status(500).json({ erro: 'Não foi possível buscar o município.' })
+    return responderErro(res, erro, 'Não foi possível buscar o município.')
   }
 })
 
-router.post('/', async (req, res) => {
+// Cadastro de municípios: UC01 do roteiro (ator: Administrador).
+router.post('/', autorizar('administrador'), async (req, res) => {
   try {
-    const municipio = await criarMunicipio(req.body)
+    const municipio = await criarMunicipio(req.body ?? {})
     return res.status(201).json(municipio)
   } catch (erro) {
-    console.error(erro)
-    return res.status(400).json({ erro: erro.message })
+    return responderErro(res, erro, 'Não foi possível cadastrar o município.')
   }
 })
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', autorizar('administrador'), async (req, res) => {
   try {
-    const municipio = await atualizarMunicipio(req.params.id, req.body)
+    const municipio = await atualizarMunicipio(req.params.id, req.body ?? {})
 
     if (!municipio) {
       return res.status(404).json({ erro: 'Município não encontrado.' })
@@ -65,12 +67,11 @@ router.put('/:id', async (req, res) => {
 
     return res.status(200).json(municipio)
   } catch (erro) {
-    console.error(erro)
-    return res.status(400).json({ erro: erro.message })
+    return responderErro(res, erro, 'Não foi possível atualizar o município.')
   }
 })
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', autorizar('administrador'), async (req, res) => {
   try {
     const municipio = await excluirMunicipio(req.params.id)
 
@@ -80,8 +81,7 @@ router.delete('/:id', async (req, res) => {
 
     return res.status(204).send()
   } catch (erro) {
-    console.error(erro)
-    return res.status(400).json({ erro: erro.message })
+    return responderErro(res, erro, 'Não foi possível excluir o município.')
   }
 })
 

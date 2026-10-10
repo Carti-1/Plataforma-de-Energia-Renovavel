@@ -1,3 +1,5 @@
+import { authFetch } from './auth.js'
+
 export async function executarTopsisApi(municipios, criteria) {
   const corpo = {
     municipios: municipios.map((m) => ({ nome: m.name, valores: m.values })),
@@ -7,7 +9,7 @@ export async function executarTopsisApi(municipios, criteria) {
 
   let resposta
   try {
-    resposta = await fetch('/api/topsis/executar', {
+    resposta = await authFetch('/api/topsis/executar', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(corpo),
@@ -18,9 +20,7 @@ export async function executarTopsisApi(municipios, criteria) {
 
   const dados = await resposta.json().catch(() => ({}))
   if (!resposta.ok) {
-    if (!resposta.ok) {
-      throw new Error(dados.erro || `Erro ao executar o TOPSIS (HTTP ${resposta.status}).`)
-    }
+    throw new Error(dados.erro || `Erro ao executar o TOPSIS (HTTP ${resposta.status}).`)
   }
   return dados
 }

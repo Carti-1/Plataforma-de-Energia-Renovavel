@@ -9,5 +9,5 @@ COPY src ./src
 ENV NODE_ENV=production
 EXPOSE 3000
 
-# O seed é idempotente: só insere os dados do exemplo se o banco estiver vazio.
-CMD ["sh", "-c", "node src/scripts/seed.js && node src/server.js"]
+# Seed e criação do administrador são idempotentes: só agem se os dados ainda não existirem.
+CMD ["sh", "-c", "node src/scripts/seed.js && node src/scripts/criar-usuario.js && node src/server.js"]

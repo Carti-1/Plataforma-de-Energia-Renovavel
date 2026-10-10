@@ -29,6 +29,11 @@ services:
       DB_USER: postgres
       DB_PASSWORD: postgres_dev
       PORT: 3000
+      # Somente para desenvolvimento/estudo: troque estes valores (por variáveis de ambiente) fora disso.
+      JWT_SECRET: ${JWT_SECRET:-troque-este-segredo-de-desenvolvimento-123456}
+      ADMIN_NOME: ${ADMIN_NOME:-Administrador}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@energia.local}
+      ADMIN_SENHA: ${ADMIN_SENHA:-trocar-esta-senha-123}
     depends_on:
       db:
         condition: service_healthy

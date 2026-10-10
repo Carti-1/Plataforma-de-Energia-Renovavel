@@ -2,12 +2,9 @@ import { topsis } from '../services/topsis.service.js'
 import { pool } from '../config/db.js'
 
 export async function executarTopsis(req, res) {
-  const {
-    municipios,
-    pesos,
-    tipos,
-    usuario_id = null,
-  } = req.body ?? {}
+  const { municipios, pesos, tipos } = req.body ?? {}
+  // O autor da simulação vem do token JWT, nunca do corpo da requisição.
+  const usuarioId = req.usuario?.id ?? null
 
   if (!Array.isArray(municipios) || municipios.length === 0) {
     return res.status(400).json({ erro: 'Informe ao menos um município.' })
@@ -47,7 +44,7 @@ export async function executarTopsis(req, res) {
           (usuario_id, parametros, status)
          VALUES ($1, $2, 'concluida')
          RETURNING id, data_execucao, status`,
-        [usuario_id, JSON.stringify(parametros)],
+        [usuarioId, JSON.stringify(parametros)],
       )
 
       const simulacao = simulacaoResult.rows[0]

@@ -73,7 +73,17 @@ const chartOptions = {
   },
 }
 
-function App() {
+const ROTULOS_PERFIL = {
+  administrador: 'Administrador',
+  pesquisador: 'Pesquisador',
+  gestor: 'Gestor público',
+}
+
+function iniciais(nome = '') {
+  return nome.split(' ').filter(Boolean).slice(0, 2).map((parte) => parte[0].toUpperCase()).join('') || '?'
+}
+
+function App({ usuario, onSair }) {
   const [activePage, setActivePage] = useState('Visão geral')
   const [search, setSearch] = useState('')
   const [municipios, setMunicipios] = useState([])
@@ -194,9 +204,9 @@ function App() {
             <a href="#config-topsis">Entenda os critérios <span aria-hidden="true">↗</span></a>
           </div>
           <div className="profile-row">
-            <div className="avatar">EQ</div>
-            <div className="profile-text"><strong>Equipe do projeto</strong><span>Pesquisador</span></div>
-            <span className="profile-menu" aria-hidden="true">•••</span>
+            <div className="avatar">{iniciais(usuario?.nome)}</div>
+            <div className="profile-text"><strong>{usuario?.nome}</strong><span>{ROTULOS_PERFIL[usuario?.perfil] ?? usuario?.perfil}</span></div>
+            <button className="logout-button" type="button" onClick={onSair}>Sair</button>
           </div>
         </div>
       </aside>

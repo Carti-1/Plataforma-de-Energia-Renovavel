@@ -20,12 +20,33 @@ npm install
 npm run dev
 ```
 
-A API inicia em `http://localhost:3000`. Para os testes unitários do algoritmo, execute `npm test`.
+A API inicia em `http://localhost:3000`. Execute `npm test` para os testes unitários (não precisam de banco) e `npm run test:integration` para os testes de integração da API (precisam do PostgreSQL migrado; usam dados temporários que são removidos ao final).
+
+## Autenticação e perfis
+
+A API usa **JWT** (cabeçalho `Authorization: Bearer <token>`) e senhas com hash **bcrypt**. Defina `JWT_SECRET` (mínimo de 16 caracteres) no `.env`; sem ele a API não inicia.
+
+Não há cadastro público: o administrador cria os usuários. Para criar o primeiro administrador:
+
+```bash
+npm run usuario:criar -- --nome "Maria" --email maria@exemplo.com --senha "uma-senha-forte" --perfil administrador
+```
+
+(ou preencha `ADMIN_EMAIL` e `ADMIN_SENHA` no `.env` e rode `npm run usuario:criar`).
+
+| Perfil | Pode |
+| --- | --- |
+| `administrador` | Tudo: cadastrar municípios (UC01), critérios, usuários e executar o TOPSIS. |
+| `pesquisador` | Consultar dados, configurar critérios (UC02) e executar o TOPSIS (UC03). |
+| `gestor` | Consultar dados e executar o TOPSIS (UC03). |
 
 ## Rotas principais
 
 | Método | Rota | Uso |
 | --- | --- | --- |
+| POST | `/api/auth/login` | Recebe `email` e `senha`; devolve o token JWT. Única rota pública. |
+| GET | `/api/auth/eu` | Dados do usuário logado. |
+| GET, POST, PUT, DELETE | `/api/usuarios` | Gestão de usuários e perfis (somente administrador). |
 | GET | `/api/dados/topsis` | Lê municípios, matriz de decisão e critérios do banco. |
 | POST | `/api/topsis/executar` | Calcula TOPSIS e grava a simulação e o ranking. |
 | GET | `/api/municipios/geojson` | Devolve municípios com coordenadas como GeoJSON. |

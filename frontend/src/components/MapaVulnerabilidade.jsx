@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
+import { authFetch } from '../services/auth.js';
 
 // Correção dos ícones padrão do Leaflet no React / Vite
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -20,7 +21,7 @@ export default function MapaVulnerabilidade({ resultadosTopsis }) {
 
   useEffect(() => {
     // Procura os dados GeoJSON dos municípios no backend
-    fetch('/api/municipios/geojson')
+    authFetch('/api/municipios/geojson')
       .then((res) => res.json())
       .then((data) => {
         if (data && data.features) {
@@ -44,7 +45,7 @@ export default function MapaVulnerabilidade({ resultadosTopsis }) {
           const { id, nome, uf, populacao, idh } = feature.properties;
           const [lon, lat] = feature.geometry.coordinates;
 
-          // Cruza com o resultado do TOPSIS se disponível
+          // Cruza com o resultado do TOPSIS (a lista já vem ordenada por Ci)
           const indiceRanking = resultadosTopsis?.findIndex((r) => r.id === id) ?? -1;
           const resultado = indiceRanking >= 0 ? resultadosTopsis[indiceRanking] : null;
 
