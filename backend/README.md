@@ -7,7 +7,7 @@ API feita com Node.js e Express. O cálculo TOPSIS está em `src/services/topsis
 1. Copie `.env.example` para `.env` nesta pasta.
 2. Para usar o banco do Compose, mantenha as configurações de exemplo. Para uma instalação nativa, ajuste `DB_HOST`, `DB_PORT`, `DB_NAME`, `DB_USER` e `DB_PASSWORD`.
 3. Não compartilhe nem envie o arquivo `.env` ao Git.
-4. Com Docker Desktop ativo, execute `docker compose up -d` na raiz. Na primeira criação do volume, o Compose executa a migração. Para instalação nativa, selecione a base indicada por `DB_NAME` no pgAdmin e execute `migrations/001_initial_schema.sql`.
+4. Com Docker Desktop ativo, execute `docker compose up -d db` na raiz (sobe só o banco; para subir tudo use `docker compose up --build`). Na primeira criação do volume, o Compose executa a migração. Para instalação nativa, selecione a base indicada por `DB_NAME` no pgAdmin e execute `migrations/001_initial_schema.sql`.
 5. Execute `npm run db:test`. A saída informa a versão do PostGIS; se falhar, confira o erro do terminal antes de abrir o frontend.
 6. Execute `npm run db:seed` para inserir os três municípios, cinco critérios e valores do exemplo numérico 7.3.
 

@@ -1,17 +1,36 @@
 # Plataforma de Energia Renovável — TOPSIS
 
-Projeto acadêmico de Full-Stack para análise demonstrativa de municípios pelo método TOPSIS.
+Plataforma para mensurar a vulnerabilidade social energética de municípios com o método multicritério TOPSIS.
 
 ## Estrutura
 
-- `frontend/`: aplicação React + Vite já iniciada, incluindo a demonstração numérica TOPSIS do roteiro.
-- `backend/`: estrutura inicial para a API Node.js.
-- `backend/migrations/`: local para copiar o SQL fornecido pelo professor, sem alterar o esquema.
-- `docs/`: requisitos, diagramas UML, documentação da API e manual do usuário.
-- `docker-compose.yml`: reservado para a configuração local do banco e dos serviços.
+- `frontend/`: React + Vite (dashboard, mapa com Leaflet, configuração de pesos e exportação).
+- `backend/`: API Node.js + Express, cálculo TOPSIS e acesso ao PostgreSQL/PostGIS.
+- `backend/migrations/`: esquema do banco (`001_initial_schema.sql`).
+- `docs/`: requisitos, UML, documentação da API e manual do usuário.
+- `docker-compose.yml`: banco, API e frontend.
 
-## Executar o frontend
+## Subir tudo com Docker (1 comando)
 
-Entre na pasta `frontend/`, instale as dependências com `npm install` e inicie a aplicação com `npm run dev`.
+Com o Docker Desktop ativo, na raiz do projeto:
 
-O backend, o banco de dados e o Docker Compose ainda são apenas estrutura inicial e serão configurados nas próximas etapas.
+```bash
+docker compose up --build
+```
+
+- Frontend: <http://localhost:8080>
+- API: <http://localhost:3000>
+
+Na primeira execução o banco aplica a migração e a API carrega os dados do exemplo 7.3 do roteiro.
+Se a porta 5432 já estiver em uso por um PostgreSQL local, rode `DB_HOST_PORT=5433 docker compose up --build`
+(no PowerShell: `$env:DB_HOST_PORT=5433; docker compose up --build`).
+
+Para apagar o banco e começar do zero: `docker compose down -v`.
+
+## Executar sem Docker (desenvolvimento)
+
+1. Suba só o banco: `docker compose up -d db` (ou use um PostgreSQL com PostGIS instalado e aplique a migração).
+2. Backend: copie `backend/.env.example` para `backend/.env`, depois `cd backend && npm install && npm run db:seed && npm run dev`.
+3. Frontend: `cd frontend && npm install && npm run dev` (abre em <http://localhost:5173> e usa a API da porta 3000 pelo proxy do Vite).
+
+Mais detalhes em `backend/README.md`.

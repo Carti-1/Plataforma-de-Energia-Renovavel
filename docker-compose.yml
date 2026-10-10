@@ -1,1 +1,46 @@
-services: {}
+# Sobe banco, API e frontend com um comando:  docker compose up --build
+# Frontend: http://localhost:8080   API: http://localhost:3000
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: plataforma_energia
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_dev
+    ports:
+      # Se já houver um PostgreSQL local na porta 5432, use: DB_HOST_PORT=5433 docker compose up
+      - "${DB_HOST_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Executada só na primeira criação do volume. Para reaplicar: docker compose down -v
+      - ./backend/migrations/001_initial_schema.sql:/docker-entrypoint-initdb.d/001_initial_schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d plataforma_energia"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+
+  backend:
+    build: ./backend
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: plataforma_energia
+      DB_USER: postgres
+      DB_PASSWORD: postgres_dev
+      PORT: 3000
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  pgdata:
