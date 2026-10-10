@@ -5,6 +5,8 @@ import municipiosRoutes from './routes/municipios.routes.js'
 import criteriosRoutes from './routes/criterios.routes.js'
 import authRoutes from './routes/auth.routes.js'
 import usuariosRoutes from './routes/usuarios.routes.js'
+import simulacoesRoutes from './routes/simulacoes.routes.js'
+import relatoriosRoutes from './routes/relatorios.routes.js'
 
 const app = express()
 
@@ -12,6 +14,8 @@ app.use(express.json())
 app.use('/api/auth', authRoutes)
 app.use('/api/usuarios', usuariosRoutes)
 app.use('/api/topsis', topsisRoutes)
+app.use('/api/simulacoes', simulacoesRoutes)
+app.use('/api/relatorios', relatoriosRoutes)
 app.use('/api/dados', dadosRoutes)
 app.use('/api/municipios', municipiosRoutes)
 app.use('/api/criterios', criteriosRoutes)

@@ -48,7 +48,11 @@ npm run usuario:criar -- --nome "Maria" --email maria@exemplo.com --senha "uma-s
 | GET | `/api/auth/eu` | Dados do usuário logado. |
 | GET, POST, PUT, DELETE | `/api/usuarios` | Gestão de usuários e perfis (somente administrador). |
 | GET | `/api/dados/topsis` | Lê municípios, matriz de decisão e critérios do banco. |
-| POST | `/api/topsis/executar` | Calcula TOPSIS e grava a simulação e o ranking. |
+| POST | `/api/topsis/executar` | Calcula TOPSIS e grava a simulação e o ranking. Com `"salvar": false` só calcula. O autor vem do token. |
+| GET | `/api/simulacoes` | Histórico das simulações (`?limite=`, padrão 20, máximo 100). |
+| GET | `/api/simulacoes/:id` | Parâmetros e ranking de uma simulação. |
+| GET | `/api/relatorios/:id/pdf` | Relatório da simulação em PDF. |
+| GET | `/api/relatorios/:id/csv` | Relatório da simulação em CSV (abre no Excel em português). |
 | GET | `/api/municipios/geojson` | Devolve municípios com coordenadas como GeoJSON. |
 | GET, POST, PUT, DELETE | `/api/municipios` | Lista, cadastra, atualiza ou remove municípios. |
 | GET, POST, PUT, DELETE | `/api/criterios` | Lista, cadastra, atualiza ou remove critérios. |

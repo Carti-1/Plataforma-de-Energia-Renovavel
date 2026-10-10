@@ -1,10 +1,13 @@
 import { authFetch } from './auth.js'
 
-export async function executarTopsisApi(municipios, criteria) {
+// salvar=false calcula sem gravar no histórico (usado ao abrir a página).
+export async function executarTopsisApi(municipios, criteria, { salvar = true } = {}) {
   const corpo = {
     municipios: municipios.map((m) => ({ nome: m.name, valores: m.values })),
     pesos: criteria.map((c) => c.weight / 100), // tela em %, API espera fração somando 1
     tipos: criteria.map((c) => c.type),         // "beneficio" ou "custo"
+    criterios: criteria.map((c) => c.name),     // só para o relatório ficar legível
+    salvar,
   }
 
   let resposta

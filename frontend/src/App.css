@@ -238,3 +238,9 @@ tbody tr:last-child td { border-bottom: 0; }
 .login-error { margin: 0; padding: 9px 11px; border-radius: 7px; background: #faeae5; color: #a4472f; font-size: 11px; }
 .login-submit { justify-content: center; min-height: 40px; margin-top: 4px; font-size: 12px; }
 .login-submit:disabled { opacity: .65; cursor: default; }
+
+/* Histórico de simulações */
+.history-panel { margin-top: 15px; }
+.history-empty { margin: 16px 0 4px; color: #7e8981; font-size: 11px; }
+.history-link { margin-right: 8px; padding: 3px 9px; border: 1px solid #cfe0d6; border-radius: 5px; background: #f3f8f5; color: #1e624a; font-size: 10px; font-weight: 600; }
+.history-link:hover { background: #e3f0e8; }

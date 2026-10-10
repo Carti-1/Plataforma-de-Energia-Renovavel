@@ -12,6 +12,8 @@ import MapaVulnerabilidade from './components/MapaVulnerabilidade';
 import { executarTopsisApi } from './services/topsisApi.js'
 import { carregarDados } from './services/dadosApi.js'
 import { exportarParaCSV } from './utils/exportRelatorio.js'
+import { baixarRelatorio } from './services/relatoriosApi.js'
+import HistoricoSimulacoes from './components/HistoricoSimulacoes.jsx'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip)
 
@@ -38,6 +40,7 @@ const navigation = [
   { label: 'Municípios', href: '#ranking', icon: '⌖' },
   { label: 'Mapa de municípios', href: '#mapa', icon: '◎' },
   { label: 'Configuração TOPSIS', href: '#config-topsis', icon: '◫' },
+  { label: 'Histórico', href: '#historico', icon: '↺' },
 ]
 
 const chartOptions = {
@@ -93,6 +96,8 @@ function App({ usuario, onSair }) {
   const [analysisIsCurrent, setAnalysisIsCurrent] = useState(true)
   const [loading, setLoading] = useState(false)
   const [apiError, setApiError] = useState(null)
+  const [simulacaoId, setSimulacaoId] = useState(null)
+  const [baixandoPdf, setBaixandoPdf] = useState(false)
 
   useEffect(() => {
     async function iniciar() {
@@ -100,7 +105,7 @@ function App({ usuario, onSair }) {
         const dados = await carregarDados()
         setMunicipios(dados.municipios)
         setCriteria(dados.criteria)
-        const resposta = await executarTopsisApi(dados.municipios, dados.criteria)
+        const resposta = await executarTopsisApi(dados.municipios, dados.criteria, { salvar: false })
         setRanking(rankingDaApi(resposta, dados.municipios))
       } catch (error) {
         setApiError(error.message)
@@ -123,6 +128,17 @@ function App({ usuario, onSair }) {
     setApiError(null)
   }
 
+  async function handleBaixarPdf() {
+    setBaixandoPdf(true)
+    try {
+      await baixarRelatorio(simulacaoId, 'pdf')
+    } catch (error) {
+      alert(error.message)
+    } finally {
+      setBaixandoPdf(false)
+    }
+  }
+
   async function handleConfigurationSubmit(event) {
     event.preventDefault()
     if (totalWeight !== 100) return
@@ -132,6 +148,7 @@ function App({ usuario, onSair }) {
     try {
       const resposta = await executarTopsisApi(municipios, criteria)
       setRanking(rankingDaApi(resposta, municipios))
+      setSimulacaoId(resposta.simulacao?.id ?? null)
       setAnalysisIsCurrent(true)
     } catch (error) {
       setApiError(error.message)
@@ -367,6 +384,17 @@ function App({ usuario, onSair }) {
                 >
                   <span aria-hidden="true">⬇</span> Exportar CSV
                 </button>
+
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={handleBaixarPdf}
+                  disabled={!simulacaoId || baixandoPdf}
+                  title={simulacaoId ? 'Baixar o relatório desta simulação em PDF' : 'Execute o TOPSIS na configuração para gerar o relatório em PDF'}
+                  style={{ padding: '8px 16px', fontSize: '0.875rem', whiteSpace: 'nowrap', opacity: simulacaoId ? 1 : 0.55 }}
+                >
+                  <span aria-hidden="true">⬇</span> {baixandoPdf ? 'Gerando...' : 'Exportar PDF'}
+                </button>
               </div>
             </div>
 
@@ -415,6 +443,8 @@ function App({ usuario, onSair }) {
               <button className="pagination-button" type="button" disabled>›</button>
             </div>
           </section>
+
+          <HistoricoSimulacoes atualizarEm={simulacaoId} />
 
           <footer className="page-footer"><span>Plataforma de Energia Renovável</span><span>Projeto acadêmico · Método TOPSIS</span></footer>
         </div>
