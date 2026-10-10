@@ -40,6 +40,11 @@ npm run usuario:criar -- --nome "Maria" --email maria@exemplo.com --senha "uma-s
 | `pesquisador` | Consultar dados, configurar critérios (UC02) e executar o TOPSIS (UC03). |
 | `gestor` | Consultar dados e executar o TOPSIS (UC03). |
 
+## Documentação da API (Swagger)
+
+Com a API rodando, abra <http://localhost:3000/api/docs> (ou `/api/docs` no frontend, pela porta 8080 do Docker ou 5173 do Vite). A especificação em JSON está em `/api/docs.json` e o código dela, em `src/docs/openapi.js`.
+Para testar rotas protegidas: faça `POST /api/auth/login`, clique em **Authorize** e cole o token.
+
 ## Rotas principais
 
 | Método | Rota | Uso |
