@@ -37,3 +37,10 @@ Para apagar o banco e começar do zero: `docker compose down -v`.
 3. Frontend: `cd frontend && npm install && npm run dev` (abre em <http://localhost:5173> e usa a API da porta 3000 pelo proxy do Vite).
 
 Mais detalhes em `backend/README.md`.
+
+## Documentação
+
+- [Requisitos, qualidade ISO/IEC 25010 e limitações conhecidas](docs/requisitos/requisitos.md)
+- [Modelagem UML](docs/uml/README.md) (casos de uso, classes, sequência, atividades, componentes, implantação e ER)
+- [API (Swagger)](docs/api/README.md): com a API no ar, abra `/api/docs`
+- [Manual do usuário](docs/manual-usuario/manual-usuario.md)
